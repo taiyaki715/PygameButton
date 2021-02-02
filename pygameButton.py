@@ -39,7 +39,11 @@ class Button:
 
     def _check_event(self):
         if self.is_onmouse():
-            print('mouseon')
+            # マウスオーバ時イベント処理
+            pass
+        if self.is_clicked():
+            # マウスクリック時イベント処理
+            self.function()
 
     def is_onmouse(self):
         mouse_x = pygame.mouse.get_pos()[0]
@@ -52,7 +56,8 @@ class Button:
             return False
 
     def is_clicked(self):
-        pass
+        if self.is_onmouse() and pygame.mouse.get_pressed()[0]:
+            print('clicked')
 
     def show(self):
         self._generate()
@@ -69,7 +74,7 @@ def hello():
 
 
 pygame.init()
-screen = pygame.display.set_mode((1000, 1000))
+screen = pygame.display.set_mode((300, 300))
 b = Button(screen, 150, 150, 300, 100, bg_color=(255, 0, 0), text="TEST")
 b.show()
 
