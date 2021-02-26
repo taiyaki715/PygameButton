@@ -43,6 +43,7 @@ class Button:
             self.change_backGround_color(self.bg_color_onmouse)
         else:
             self.change_backGround_color(self.bg_color)
+
         if self.is_clicked():
             # マウスクリック時イベント処理
             self.function()
