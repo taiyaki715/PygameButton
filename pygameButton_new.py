@@ -60,7 +60,7 @@ class Button:
 
     def is_clicked(self):
         """
-        Return TRUE while the button is clicked.
+        Return TRUE while the button is being clicked.
         """
         if pygame.mouse.get_pressed()[0] and self.is_hovered():
             return True
@@ -71,7 +71,12 @@ class Button:
         """
         Show button.
         """
-        pygame.draw.rect(self.master, self.config['background']['color'],
+        # self._draw()
+        main_loop = threading.Thread(target=self._loop)
+        main_loop.start()
+
+    def _draw(self):
+        pygame.draw.rect(self.master, self.background_color,
                          (*self.position, *self.size))
         text = self.config['text']['font'].render(self.text, True, self.config['text']['color'])
         self.master.blit(text, (self.get_position()[0] + (self.get_size()[0] - len(self.text) * 15) / 2, self.get_position()[1] + self.get_size()[1] * 0.5 - 10))
@@ -82,7 +87,7 @@ class Button:
         """
         while True:
             self._check_event()
-            self.show()
+            self._draw()
             pygame.display.update()
             time.sleep(0.05)
 
@@ -99,9 +104,15 @@ class Button:
             self.config['function']
 
     def change_background_color(self, color):
-        self.background['color'] = color
+        """
+        Change backgroud color to given RGB data.
+        """
+        self.background_color = color
 
 
+"""
+Test codes.
+"""
 pygame.init()
 screen = pygame.display.set_mode((500, 500))
 b = Button(screen, 150, 150, 300, 100, background_color=(255, 0, 0), text="TEST")
