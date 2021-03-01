@@ -10,14 +10,18 @@ class Button:
                  position_x, position_y, size_x, size_y,
                  background_color=(255, 255, 255), text_color=(0, 0, 0),
                  background_color_hovered=(255, 255, 255),
+                 background_color_clicked=(255, 255, 255),
                  text_color_hovered=(0, 0, 0),
+                 text_color_clicked=(0, 0, 0),
                  text="", text_font=None,
                  function=None):
 
         self.config = {'background': {'color': background_color,
-                                      'color_hovered': background_color_hovered},
+                                      'color_hovered': background_color_hovered,
+                                      'color_clicked': background_color_clicked},
                        'text': {'color': text_color,
                                 'color_hovered': text_color_hovered,
+                                'color_clicked': text_color_clicked,
                                 'font': text_font},
                        'function': function}
 
@@ -94,13 +98,16 @@ class Button:
         """
         Button event listner.
         """
+        if self.is_clicked():
+            self.change_background_color(self.config['background']['color_clicked'])
+            return
+        else:
+            self.change_background_color(self.config['background']['color'])
+
         if self.is_hovered():
             self.change_background_color(self.config['background']['color_hovered'])
         else:
             self.change_background_color(self.config['background']['color'])
-        
-        if self.is_clicked():
-            self.config['function']
 
     def change_background_color(self, color):
         """
