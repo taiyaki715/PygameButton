@@ -1,96 +1,109 @@
-import pygame
-from pygame.locals import *
-
-import sys
 import threading
 import time
 
+import pygame
+import pygame.locals
+
 
 class Button:
-    def __init__(self, master, posx, posy, x, y, 
-                 bg_color=(255, 255, 255), bg_color_onmouse=(255, 255, 0), 
-                 text=None, text_font=None, text_color=(255, 255, 255), func=None):
+    def __init__(self, master,
+                 position_x, position_y, size_x, size_y,
+                 background_color=(255, 255, 255), text_color=(0, 0, 0),
+                 background_color_hovered=(255, 255, 255),
+                 text_color_hovered=(0, 0, 0),
+                 text="", text_font=None,
+                 function=None):
+
+        self.config = {'background': {'color': background_color,
+                                      'color_hovered': background_color_hovered},
+                       'text': {'color': text_color,
+                                'color_hovered': text_color_hovered,
+                                'font': text_font},
+                       'function': function}
+
         self.master = master
-        self.position = (posx, posy)
-        self.size = (x, y)
-        self.bg_color = bg_color
-        self.bg_color_onmouse = bg_color_onmouse
+        self.position = (position_x, position_y)
+        self.size = (size_x, size_y)
+        self.background_color = self.config['background']['color']
         self.text = text
-        self.text_color = text_color
-        self.function = func
+        self.text_color = self.config['text']['color']
 
-        if text_font is None:
-            self.text_font = pygame.font.Font(None, 40)
-        else:
-            self.text_font = text_font
+        if self.config['text']['font'] is None:
+            self.config['text']['font'] = pygame.font.Font(None, 40)
 
-    def _generate(self):
-        pygame.draw.rect(self.master, self.bg_color,
-                         (*self.position, *self.size))
-        text = self.text_font.render(self.text, True, self.text_color)
-        self.master.blit(text, (self.get_position()[0] + (self.get_size()[0] - len(self.text)*15) / 2, self.get_position()[1] + self.get_size()[1]*0.5 - 10))
+    def get_position(self):
+        """
+        Returns button position as tuple.
+        """
+        return self.position
 
-    def _main_loop(self):
-        while True:
-            self._check_event()
-            self._generate()
-            pygame.display.update()
-            time.sleep(0.05)
+    def get_size(self):
+        """
+        Returns button size as tuple.
+        """
+        return self.size
 
-    def _check_event(self):
-        if self.is_onmouse():
-            # マウスオーバ時イベント処理
-            self.change_backGround_color(self.bg_color_onmouse)
-        else:
-            self.change_backGround_color(self.bg_color)
+    def is_hovered(self):
+        """
+        Return TRUE if mouse cursor is on the button.
+        """
+        mouse_position_x = pygame.mouse.get_pos()[0]
+        mouse_position_y = pygame.mouse.get_pos()[1]
 
-        if self.is_clicked():
-            # マウスクリック時イベント処理
-            self.function()
-
-    def is_onmouse(self):
-        mouse_x = pygame.mouse.get_pos()[0]
-        mouse_y = pygame.mouse.get_pos()[1]
-
-        if self.get_position()[0] < mouse_x < self.get_position()[0] + self.get_size()[0] and \
-           self.get_position()[1] < mouse_y < self.get_position()[1] + self.get_size()[1]:
+        # Check if mouse cursor is on the button.
+        if self.get_position()[0] < mouse_position_x < self.get_position()[0] + self.get_size()[0] and \
+           self.get_position()[1] < mouse_position_y < self.get_position()[1] + self.get_size()[1]:
             return True
         else:
             return False
 
     def is_clicked(self):
-        if self.is_onmouse() and pygame.mouse.get_pressed()[0]:
-            # クリック時処理
-            pass
+        """
+        Return TRUE while the button is being clicked.
+        """
+        if pygame.mouse.get_pressed()[0] and self.is_hovered():
+            return True
+        else:
+            return False
 
     def show(self):
-        self._generate()
-        self.main_thread = threading.Thread(target=self._main_loop)
-        self.main_thread.start()
+        """
+        Show button.
+        """
+        # self._draw()
+        main_loop = threading.Thread(target=self._loop)
+        main_loop.start()
 
-    def get_size(self):
-        return self.size
+    def _draw(self):
+        pygame.draw.rect(self.master, self.background_color,
+                         (*self.position, *self.size))
+        text = self.config['text']['font'].render(self.text, True, self.config['text']['color'])
+        self.master.blit(text, (self.get_position()[0] + (self.get_size()[0] - len(self.text) * 15) / 2, self.get_position()[1] + self.get_size()[1] * 0.5 - 10))
 
-    def get_position(self):
-        return self.position
+    def _loop(self):
+        """
+        Main loop.
+        """
+        while True:
+            self._check_event()
+            self._draw()
+            pygame.display.update()
+            time.sleep(0.05)
 
-    def change_backGround_color(self, color):
-        self.bg_color = color
+    def _check_event(self):
+        """
+        Button event listner.
+        """
+        if self.is_hovered():
+            self.change_background_color(self.config['background']['color_hovered'])
+        else:
+            self.change_background_color(self.config['background']['color'])
+        
+        if self.is_clicked():
+            self.config['function']
 
-
-# テスト用コード
-pygame.init()
-screen = pygame.display.set_mode((500, 500))
-b = Button(screen, 150, 150, 300, 100, bg_color=(255, 0, 0), text="TEST")
-b.show()
-
-while True:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-    pygame.display.update()
-
-input()
-pygame.quit()
-sys.exit()
+    def change_background_color(self, color):
+        """
+        Change backgroud color to given RGB data.
+        """
+        self.background_color = color
