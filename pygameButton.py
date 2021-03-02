@@ -29,8 +29,10 @@ class Button:
         self.position = (position_x, position_y)
         self.size = (size_x, size_y)
         self.background_color = self.config['background']['color']
-        self.text = text
+        self.label = text
         self.text_color = self.config['text']['color']
+
+        self.click_duration = 0
 
         if self.config['text']['font'] is None:
             self.config['text']['font'] = pygame.font.Font(None, 40)
@@ -81,8 +83,8 @@ class Button:
     def _draw(self):
         pygame.draw.rect(self.master, self.background_color,
                          (*self.position, *self.size))
-        text = self.config['text']['font'].render(self.text, True, self.config['text']['color'])
-        self.master.blit(text, (self.get_position()[0] + (self.get_size()[0] - len(self.text) * 15) / 2, self.get_position()[1] + self.get_size()[1] * 0.5 - 10))
+        text = self.config['text']['font'].render(self.label, True, self.config['text']['color'])
+        self.master.blit(text, (self.get_position()[0] + (self.get_size()[0] - len(self.label) * 15) / 2, self.get_position()[1] + self.get_size()[1] * 0.5 - 10))
 
     def _loop(self):
         """
@@ -100,9 +102,13 @@ class Button:
         """
         if self.is_clicked():
             self.change_background_color(self.config['background']['color_clicked'])
+            if self.click_duration == 0:
+                self.config['function']()
+            self.click_duration += 1
             return
         else:
             self.change_background_color(self.config['background']['color'])
+            self.click_duration = 0
 
         if self.is_hovered():
             self.change_background_color(self.config['background']['color_hovered'])
